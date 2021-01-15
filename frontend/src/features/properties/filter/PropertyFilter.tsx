@@ -1,6 +1,6 @@
 import './PropertyFilter.scss';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Col } from 'react-bootstrap';
 import { Formik, getIn } from 'formik';
 import { ILookupCode } from 'actions/lookupActions';
@@ -16,6 +16,10 @@ import { IPropertyFilter } from './IPropertyFilter';
 import { TableSort } from 'components/Table/TableSort';
 import { FindMorePropertiesButton } from 'components/maps/FindMorePropertiesButton';
 import { TypeaheadField } from 'components/common/form/Typeahead';
+import { useDispatch, useSelector } from 'react-redux';
+import useKeycloakWrapper from 'hooks/useKeycloakWrapper';
+import { fetchPropertyNames } from 'actionCreators/propertyActionCreator';
+import { RootState } from 'reducers/rootReducer';
 
 /**
  * PropertyFilter component properties.
@@ -51,6 +55,16 @@ export const PropertyFilter: React.FC<IPropertyFilterProps> = ({
   onSorting,
 }) => {
   const [propertyFilter, setPropertyFilter] = React.useState<IPropertyFilter>(defaultFilter);
+  const dispatch = useDispatch();
+  const keycloak = useKeycloakWrapper();
+  const [initialLoad, setInitialLoad] = useState(false);
+  useEffect(() => {
+    if (!initialLoad) {
+      fetchPropertyNames(keycloak.agencyId!)(dispatch);
+      setInitialLoad(true);
+    }
+  }, [initialLoad, dispatch, keycloak.agencyId]);
+  const propertyNames = useSelector<RootState, String[]>(state => state.propertyNames);
   useRouterFilter({
     filter: propertyFilter,
     setFilter: filter => {
@@ -119,6 +133,16 @@ export const PropertyFilter: React.FC<IPropertyFilterProps> = ({
             <div className="vl"></div>
             <Col className="bar-item">
               <PropertyFilterOptions />
+            </Col>
+            <Col className="map-filter-typeahead">
+              <TypeaheadField
+                options={propertyNames}
+                name="name"
+                placeholder="Enter a name"
+                hideValidation
+                clearSelected={clear}
+                setClear={setClear}
+              />
             </Col>
             <Col className="map-filter-typeahead">
               <TypeaheadField
