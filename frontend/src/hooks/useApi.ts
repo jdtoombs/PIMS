@@ -10,7 +10,6 @@ import { IGeoSearchParams } from 'constants/API';
 import queryString from 'query-string';
 import { IBuilding, IParcel } from 'actions/parcelsActions';
 import { store } from 'App';
-
 export interface IGeocoderResponse {
   siteId: string;
   fullAddress: string;
